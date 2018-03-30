@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# Originally writtten by Stefans Mezulis <stefans.mezulis@gmail.com> for
+# https://github.com/pipeseroni/packaging-aur
+# Released into the public domain via the CC0 waiver.
+
 # Ensure that the name of the remote matches the name of the branch.
 # That is, we are pushing the correct branch to the correct repository.
 #

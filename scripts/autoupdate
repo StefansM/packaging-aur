@@ -1,6 +1,10 @@
 #!/bin/bash
 set -e
 
+# Originally writtten by Stefans Mezulis <stefans.mezulis@gmail.com> for
+# https://github.com/pipeseroni/packaging-aur
+# Released into the public domain via the CC0 waiver.
+
 release_url="https://api.github.com/repos/pipeseroni/%s/releases"
 aur_url="ssh://aur@aur.archlinux.org/%s.git"
 

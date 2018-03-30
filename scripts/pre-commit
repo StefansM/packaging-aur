@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# Originally writtten by Stefans Mezulis <stefans.mezulis@gmail.com> for
+# https://github.com/pipeseroni/packaging-aur
+# Released into the public domain via the CC0 waiver.
+
 # Only check package branches.
 branch=$(git rev-parse --abbrev-ref HEAD)
 if [[ "$branch" != "pipes"* ]]; then
