@@ -80,4 +80,6 @@ Both hooks require `bash`.
 
 ## Copyright
 
-TBA.
+The files in this repository (but *not* the projects packaged by these scripts)
+are released to the public domain via the [CC0 waiver](LICENSE).
+
