@@ -1,5 +1,11 @@
 #!/bin/bash
 
+# Only check package branches.
+branch=$(git rev-parse --abbrev-ref HEAD)
+if [[ "$branch" != "pipes"* ]]; then
+    exit 0
+fi
+
 root_dir=$(git rev-parse --show-toplevel)
 cd "$root_dir"
 
