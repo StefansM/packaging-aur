@@ -1,0 +1,63 @@
+#!/bin/bash
+set -e
+
+release_url="https://api.github.com/repos/pipeseroni/%s/releases"
+aur_url="ssh://aur@aur.archlinux.org/%s.git"
+
+# Get the current tag from github, update PKGBUILD and checksums.
+
+for branch in $(git for-each-ref refs/heads --format='%(refname:short)'); do
+    # Check for a valid branch
+    case "$branch" in
+        pipes.*)
+            repo="$branch"
+            ;;
+        *) continue;;
+    esac
+
+    # Switch to the branch
+    git checkout "$branch"
+
+    # Retrieve version information from GitHub
+    new_version=$(\
+        wget -q $(printf "$release_url" "$repo") -O - \
+        | jq -r '.[0].tag_name' \
+        | sed 's/^v//')
+
+    # Retrieve current version from the PKGBUILD
+    current_version=$(sed -n 's/^pkgver=\(.*\)$/\1/p' PKGBUILD)
+
+    if [[ "$new_version" != "$current_version" ]]; then
+        # Bump verison number
+        sed -i "s/^pkgver=.*$/pkgver=$new_version/" PKGBUILD
+
+        # Bump checksums
+        updpkgsums
+        makepkg --printsrcinfo > .SRCINFO
+
+        # Add files to index
+        git add PKGBUILD .SRCINFO
+
+        # Generate informative comment for the commit message.
+        commit_comments=$(git diff --staged | sed 's/^/# /')
+        git commit -t <(\
+            printf "Bump version from %s → %s\n\n%s\n" \
+            "$current_version" \
+            "$new_version" \
+            "$commit_comments")
+
+        # Should this be pushed to the AUR?
+        read -n1 -p "Push to AUR? [y/N] " push
+        if [[ "$push" == "y" || "$push" == "Y" ]]; then
+            # Add remote to git
+            git remote add \
+                "$branch" \
+                "$(printf "$aur_url" "$branch")" \
+                2>/dev/null || true
+            git push "$branch" "$branch:master"
+        fi
+    fi
+done
+
+# Return to master
+git checkout master

@@ -1,0 +1,57 @@
+#!/bin/bash
+
+# Ensure that the name of the remote matches the name of the branch.
+# That is, we are pushing the correct branch to the correct repository.
+#
+# Also check that the remote URL matches the remote name. That is, if
+# the remote name is "pipes.c", the URL should end in "/pipes.c.git".
+#
+# Finally, check that the hashes in the .SRCINFO match those in the PKGBUILD.
+#
+# This hook is called with the following parameters:
+#
+# $1 -- Name of the remote to which the push is being done
+# $2 -- URL to which the push is being done
+#
+
+remote="$1"
+url="$2"
+branch=$(git rev-parse --abbrev-ref HEAD)
+aur_url="ssh://aur@aur.archlinux.org/"
+
+if [[ "$url" == $aur_url* && "$remote" != "$branch" ]]; then
+    echo "Remote repository name '$remote' " \
+         "does not match branch name '$branch'" \
+         >&2
+    exit 1
+fi
+
+if [[ "$url" == $aur_url* && "$url" != *"/$remote.git" ]]; then
+    echo "Remote name '$remote' does not match the remote URL '$url'." \
+         "The autoupdate script expects remote names and URLs to correspond." \
+         >&2
+    exit 2
+fi
+
+if [[ "$branch" == "pipes."* ]]; then
+
+    # Here, we compare the .SRCINFO generated from indexed PKGBUILD with the
+    # indexed .SRCINFO. Do this by extracting the indexed PKGBUILD to a
+    # temporary directory and comparing it to the indexed .SRCINFO.
+    tmpdir=$(mktemp -d pipes-tmp.XXXXXXXXXX)
+    git show HEAD:PKGBUILD > "$tmpdir/PKGBUILD"
+    diff_output=$(\
+        diff -u --label indexed/.SRCINFO --label generated/.SRCINFO \
+            <(git show HEAD:.SRCINFO) \
+            <(cd "$tmpdir" && makepkg --printsrcinfo))
+    diff_exit=$?
+    rm -rf "$tmpdir"
+
+    if [[ $diff_exit != 0 ]]; then
+        echo "Contents of .SRCINFO in git index do not match contents of" \
+             ".SRCINFO generated from indexed PKGBUILD. Diff:" \
+             >&2
+        echo "$diff_output" >&2
+        exit 1
+    fi
+fi
