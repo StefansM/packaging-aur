@@ -1,5 +1,4 @@
 #!/bin/bash
-exit 0
 
 root_dir=$(git rev-parse --show-toplevel)
 cd "$root_dir"
@@ -12,7 +11,7 @@ pkgbuild_hashes=(${sha256sums[@]})
 eval $(makepkg -g)
 actual_hashes=(${sha256sums[@]})
 
-# COmpare the hashes
+# Compare the hashes
 diff_output=$(diff -u \
     --label PKGBUILD --label actual \
     <(printf "%s\n" "${pkgbuild_hashes[@]}") \
@@ -20,14 +19,8 @@ diff_output=$(diff -u \
 if [[ $? != 0 ]]; then
     printf "PKGBUILD hashes do not match actual hashes. Diff:\n" >&2
     printf "%s\n" "$diff_output" >&2
+    exit 1
 fi
-
-# Check if arrays are equal. They must be the same length and contain equal
-# elements.
-[[ ${#pkgbuild_hashes[@]} == ${#actual_hashes[@]} ]] || hash_mismatch
-for ((i=0; i < ${#pkgbuild_hashes[@]}; i++)); do
-    [[ ${pkgbuild_hashes[$i]} == ${actual_hashes[$i]} ]] || hash_mismatch
-done
 
 # Update .SRCINFO before each commit.
 makepkg --printsrcinfo > .SRCINFO
