@@ -31,11 +31,11 @@ to be updated:
 
 ### Automated packaging
 
-The entire packaging process can be automated with [scripts/autoupdate], which
-will iterate over each branch in this repository and fetch release information
-for that project from GitHub's API. For branches with new releases, the script
-will bump `pkgver` and `sha256sums`, interactively commit, and prompt to push
-changes to the AUR.
+The entire packaging process can be automated with
+[scripts/autoupdate](scripts/autoupdate), which will iterate over each branch
+in this repository and fetch release information for that project from GitHub's
+API. For branches with new releases, the script will bump `pkgver` and
+`sha256sums`, interactively commit, and prompt to push changes to the AUR.
 
 The autoupdate script requires that [`jq`][jq] be installed. It also requires
 `wget` and `bash`.
